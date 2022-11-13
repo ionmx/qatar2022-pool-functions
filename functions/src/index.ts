@@ -36,7 +36,32 @@ const getScore = (home: number, visitor: number, homePrediction: number, visitor
 };
 
 exports.scheduledFunction = functions.pubsub.schedule('every 1 minutes').onRun((context) => {
-  console.log('This will be run every 1 minutes!');
+  // Search for scores every 1 minutes
+  console.log('Updating scores...');
+
+  const date = new Date();
+  const currentDate = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+  const competition = 'af79lqrc0ntom74zq13ccjslo';
+  const dataUrl = `https://api.fifa.com/api/v3/calendar/matches?count=500&from=${currentDate}T00:00:00Z&to=${currentDate}T23:59:59Z&idCompetition=${competition}&count=500`;
+
+  db.ref().child('matches').once('value').then((matches) => {
+    fetch(dataUrl)
+      .then((response) => response.json())
+      .then((data) => {
+        data.Results.forEach((item: any) => {
+          matches.forEach((match) => {
+            if (match.val().fifaId === item.IdMatch) {
+              if (match.val().homeScore !== item.Home.Score) {
+                db.ref(`matches/${match.val().game}/homeScore`).set(item.Home.Score);
+              }
+              if (match.val().awayScore !== item.Away.Score) {
+                db.ref(`matches/${match.val().game}/awayScore`).set(item.Away.Score);
+              }
+            }
+          });
+        });
+      });
+  });
   return null;
 });
 
