@@ -1,5 +1,6 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
+import fetch from "node-fetch";
 
 admin.initializeApp(functions.config().firebase);
 const db = admin.database();
@@ -41,12 +42,12 @@ exports.scheduledFunction = functions.pubsub.schedule('every 1 minutes').onRun((
 
   const date = new Date();
   const currentDate = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
-  const competition = '2000000052';
+  const competition = '17'; // Worlcup 2022
   const dataUrl = `https://api.fifa.com/api/v3/calendar/matches?count=500&from=${currentDate}T00:00:00Z&to=${currentDate}T23:59:59Z&idCompetition=${competition}&count=500`;
   db.ref().child('matches').once('value').then((matches) => {
     fetch(dataUrl)
       .then((response) => response.json())
-      .then((data) => {
+      .then((data: any) => {
         data.Results.forEach((item: any) => {
           matches.forEach((match) => {
             if (match.val().fifaId === item.IdMatch) {
