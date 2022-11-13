@@ -41,9 +41,8 @@ exports.scheduledFunction = functions.pubsub.schedule('every 1 minutes').onRun((
 
   const date = new Date();
   const currentDate = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
-  const competition = 'af79lqrc0ntom74zq13ccjslo';
+  const competition = '2000000052';
   const dataUrl = `https://api.fifa.com/api/v3/calendar/matches?count=500&from=${currentDate}T00:00:00Z&to=${currentDate}T23:59:59Z&idCompetition=${competition}&count=500`;
-
   db.ref().child('matches').once('value').then((matches) => {
     fetch(dataUrl)
       .then((response) => response.json())
@@ -53,9 +52,11 @@ exports.scheduledFunction = functions.pubsub.schedule('every 1 minutes').onRun((
             if (match.val().fifaId === item.IdMatch) {
               if (match.val().homeScore !== item.Home.Score) {
                 db.ref(`matches/${match.val().game}/homeScore`).set(item.Home.Score);
+                console.log('Update Home Score: ' +item.Home.Score);
               }
               if (match.val().awayScore !== item.Away.Score) {
                 db.ref(`matches/${match.val().game}/awayScore`).set(item.Away.Score);
+                console.log('Update Away Score: ' +item.Away.Score);
               }
             }
           });
