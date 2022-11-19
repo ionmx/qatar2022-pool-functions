@@ -77,8 +77,10 @@ export const updatePredictionPoints = functions.database.ref("matches/{matchId}"
       snapshot.forEach((childSnapshot) => {
         db.ref().child(`predictions/${childSnapshot.key}/${matchId}`).once('value').then((predSnapshot) => {
           const pred = predSnapshot.val();
-          const points = getScore(match.homeScore, match.awayScore, pred.homePrediction, pred.awayPrediction);
-          db.ref(`predictions/${childSnapshot.key}/${matchId}/points`).set(points);
+          if (pred) {
+            const points = getScore(match.homeScore, match.awayScore, pred.homePrediction, pred.awayPrediction);
+            db.ref(`predictions/${childSnapshot.key}/${matchId}/points`).set(points);
+          }
         });
       });
     });
